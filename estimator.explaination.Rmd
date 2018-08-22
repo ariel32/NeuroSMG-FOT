@@ -1,3 +1,16 @@
+---
+title: "Estimator explaination"
+author: "Cherubael"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = "center")
+```
+
+## Описание исходных данных
+```{r}
+# А заодно их загрузка и загрузка необходимых пакетов
 library(tidyverse)
 d = read.csv("result.csv", sep = ";", encoding = "UTF-8", header = F)
 names(d) <- c("session","name", "time","curr.time","x.coord","y.coord", "hand")
@@ -6,7 +19,26 @@ d$session <- as.character(d$session)
 d$x.coord <- as.numeric(d$x.coord)
 d$y.coord <- as.numeric(d$y.coord)
 d$hand <- factor(d$hand, levels = c("right","left"))
+```
 
+Исходные данные имеют следующий вид:
+
+```{r}
+tbl <- knitr::kable(head(d), align = "c")
+kableExtra::kable_styling(tbl, "striped", full_width = T, position = "left")
+```
+
+где:
+
+* ***session*** - идетификатор сессии исследования, равный времени начала теста,
+* ***name*** - идетификатор испытуемого,
+* ***time*** - текущее время, в которое произошло прикосновение к экрану,
+* ***curr.time*** - количество секунд, прошедших с начала теста,
+* ***x.coord*** и ***y.coord*** - координаты прикосновения на экране мобильного устройства,
+* ***hand*** - идентификатор руки.
+
+```{r}
+# Доводим данные до ума, инициализируем объект для хранения результатов
 d$tick <- c(NA, diff(d$time))
 d$tick[c(0, diff(d$curr.time)) < 0] <- NA # через дифф ищем смену в текущем времени с 0 на 5, там же сглаживаем провалы в тиках при помощи NA
 
@@ -14,9 +46,11 @@ d$time     <- as.integer(d$time/1000)
 d$datetime <- as.POSIXct(d$time, origin="1970-01-01")
 d$datetime <- format(d$datetime, format="%H:%M:%S")
 result <- data.frame(name = d$name[1])
+```
 
-##########################################################################################
 # Интервал между касаниями
+
+```{r}
 ggplot(d, aes(x=factor(curr.time), y=tick)) +
   geom_violin(scale="width") +
   geom_smooth(method = "loess", se=TRUE, aes(group=1)) +
@@ -34,17 +68,23 @@ ggplot(d, aes(x=factor(curr.time), y=tick)) +
         axis.ticks.x=element_blank(),
         axis.title.y = element_text(face="bold", size=20),
         axis.text.y  = element_text(angle=90, vjust=0, size=16))
+```
 
-sprintf("%.2f±%.2f", mean(d$tick[d$hand=="right"], na.rm = T), sd(d$tick[d$hand=="right"], na.rm = T))
-sprintf("%.2f±%.2f", mean(d$tick[d$hand=="left"], na.rm = T),  sd(d$tick[d$hand=="right"], na.rm = T))
+Данные о среднем значении±среднее квадратическое отклонение для интервалов между касаниями для правой и левой руки используются как один из показателей:
 
+* ***Правая рука*** - `r sprintf("%.2f±%.2f", mean(d$tick[d$hand=="right"], na.rm = T), sd(d$tick[d$hand=="right"], na.rm = T))` миллисекунд.
+* ***Левая рука*** - `r sprintf("%.2f±%.2f", mean(d$tick[d$hand=="left"], na.rm = T),  sd(d$tick[d$hand=="left"], na.rm = T))` миллисекунд.
+
+```{r}
 result$mean.interval.right <- mean(d$tick[d$hand=="right"], na.rm = T)
 result$mean.interval.left  <- mean(d$tick[d$hand=="left"] , na.rm = T)
 result$sd.interval.right   <- sd(d$tick[d$hand=="right"] , na.rm = T)
 result$sd.interval.left    <- sd(d$tick[d$hand=="left"] , na.rm = T)
+```
 
-##########################################################################################
 # Количество касаний в секунду
+
+```{r}
 d %>% group_by(curr.time, hand, name) %>% summarise(n = n()) -> res
 
 ggplot(res, aes(x=factor(curr.time), y=n)) +
@@ -64,17 +104,23 @@ ggplot(res, aes(x=factor(curr.time), y=n)) +
         axis.ticks.x=element_blank(),
         axis.title.y = element_text(face="bold", size=20),
         axis.text.y  = element_text(angle=90, vjust=0, size=16))
+```
 
-sprintf("%.2f±%.2f", mean(res$n[res$hand=="right"], na.rm = T), sd(res$n[res$hand=="right"], na.rm = T))
-sprintf("%.2f±%.2f", mean(res$n[res$hand=="left"], na.rm = T),  sd(res$n[res$hand=="right"], na.rm = T))
+Данные о количестве касаний в секунду обрабатываются аналогичным образом и сохраняются для дальнейшей обработки:
 
+* ***Правая рука*** - `r sprintf("%.2f±%.2f", mean(res$n[res$hand=="right"], na.rm = T), sd(res$n[res$hand=="right"], na.rm = T))` касаний в секунду.
+* ***Левая рука*** - `r sprintf("%.2f±%.2f", mean(res$n[res$hand=="left"], na.rm = T),  sd(res$n[res$hand=="left"], na.rm = T))` касаний в секунду.
+
+```{r}
 result$mean.tap.right <- mean(res$n[res$hand=="right"], na.rm = T)
 result$mean.tap.left  <- mean(res$n[res$hand=="left"] , na.rm = T)
 result$sd.tap.right   <- sd(res$n[res$hand=="right"] , na.rm = T)
 result$sd.tap.left    <- sd(res$n[res$hand=="left"] , na.rm = T)
+```
 
-##########################################################################################
 # Кумулятивная сумма касаний в секунду
+
+```{r}
 d %>% group_by(curr.time, hand, name) %>% summarise(n = n()) -> res
 res %>% group_by(hand, name) %>% mutate(cum.n = cumsum(n)) -> res
 
@@ -103,34 +149,65 @@ result$cum.slope.right <- smry.r$coefficients[2]
 result$cum.slope.left  <- smry.l$coefficients[2]
 result$cum.R2.right    <- smry.r$r.squared
 result$cum.R2.left     <- smry.l$r.squared
+```
 
-##########################################################################################
-# Коэффициент силы нервной системы (КСНС):
+Такие показатели, как коэффициент наклона прямой и коэффициент детерминации ($R^2$) для правой и левой руки также вычисляются и сохраняются для дальнейшей обработки.
+
+# Коэффициент силы нервной системы (КСНС)
+
+```{r}
 d %>% group_by(hand, curr.time) %>% summarise(n = n(), time = mean(time)) -> res
 res %>% summarise(KSNS=(sum(n-n[curr.time==0]))/sum(n[curr.time==0]*100)) -> res
 
 result$KSNS.right <- res$KSNS[res$hand=="right"]
 result$KSNS.left  <- res$KSNS[res$hand=="left"]
+```
 
-##########################################################################################
-# Коэффициент функциональной асимметрии по работоспособности левой и правой рук:
+КСНС вычисляется по формуле:
+
+КСНС = ((х2 - х1) + (х3 - х1) + ... + (х30 - х1)) : х1 * 100,
+
+где x1, ..., x30 - количество прикосновений в заданный промежуток времени.
+
+Для текущего примера КСНС для правой руки равен: `r sprintf("%.2f", result$KSNS.right)`.
+Для левой: `r sprintf("%.2f", result$KSNS.left)`.
+
+# Коэффициент функциональной асимметрии по работоспособности левой и правой рук
+
+Коэффициент функциональной асимметрии по работоспособности левой и правой рук рассчитывается как:
+
+KFa = ((ΣR - ΣL) : (ΣR + ΣL)) * 100,
+
+где ΣR - сумма касаний правой рукой, ΣL - сумма касаний левой рукой.
+
+```{r}
 d %>% group_by(hand, curr.time, name) %>% summarise(n = n()) %>% ungroup(hand, curr.time) -> res
 res %>% summarise(KFa = (sum(n[hand=="right"])-sum(n[hand=="left"]))/(sum(n[hand=="right"])+sum(n[hand=="left"]))*100) %>% as.numeric -> result$KFa
+```
 
-##########################################################################################
+Для текущего примера коэффициент функциональной асимметрии по работоспособности левой и правой рук для правой руки равен: `r sprintf("%.2f", result$KFa)`.
+
 # Плотность касаний в процессе прохождения теппинг-теста
+
+```{r}
 ggplot(d, aes(x = x.coord, y = y.coord)) +
   geom_point() +
   geom_density_2d() +
   stat_density_2d(aes(fill = stat(level), color = hand), geom = "polygon")
+```
 
-##########################################################################################
+
 # Результаты
-result
 
+Итоговый объект, содержащий результаты имеет следующий вид:
 
-
-
+```{r}
+result <- t(result)
+result <- cbind(rownames(result), result); rownames(result) <- NULL
+colnames(result) <- c("Показатель", "Численное значение")
+tbl <- knitr::kable(result, align = "c")
+kableExtra::kable_styling(tbl, "striped", full_width = T, position = "left")
+```
 
 
 
