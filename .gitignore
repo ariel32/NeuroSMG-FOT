@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+FOT.b4a.meta
+Starter.bas
+icon.jpg
+Files/
+Objects/**
+!Objects/FOT.apk

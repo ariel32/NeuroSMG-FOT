@@ -1,0 +1,229 @@
+﻿Build1=Default,FOT.test.NeuroSMG
+File1=main.bal
+FileGroup1=Default Group
+Group=Default Group
+IconFile=
+Library1=core
+Library2=messharelibrary
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" />~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>~\n~	android:targetSdkVersion="19")~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~
+Module1=Starter
+NumberOfFiles=1
+NumberOfLibraries=2
+NumberOfModules=1
+Version=7.8
+@EndOfDesignText@
+#Region Module Attributes
+	#FullScreen: True
+	#IncludeTitle: False
+	#ApplicationLabel: FOT
+	#VersionCode: 1
+	#VersionName: 
+	#SupportedOrientations: unspecified
+	#CanInstallToExternalStorage: True
+#End Region
+
+'Activity module
+Sub Process_Globals
+	'These global variables will be declared once when the application starts.
+	'These variables can be accessed from all modules.
+	Dim testTimer As Timer
+End Sub
+
+Sub Globals
+	Dim CanvasRes As Canvas
+	Dim BitmapRes As Bitmap
+	Dim EditTextName As EditText
+	Dim ButtonHand As Button
+	Dim LabelTicks As Label
+	Dim TimerLabel As Label
+	Dim ButtonReset As Button
+	Dim ButtonShare As Button
+	Dim ButtonDelete As Button
+	
+	Dim testDuration As Int
+	Dim currentTime As Int
+	Dim coords As String
+	Dim tickduration As String
+	Dim TimeLeft As Int
+	Dim TimerStarted As Boolean
+	Dim hand As String
+	Dim session As Long
+	Dim Writer As TextWriter
+	Dim now As Long
+	Dim result As List
+	Dim ticks As List
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	Activity.LoadLayout("main")
+    CanvasRes.Initialize(Activity) 'Initialize the canvas (drawer) and makes it draw on the activity (form).
+	BitmapRes.Initialize3(CanvasRes.Bitmap)
+	
+	testTimer.Initialize("testTimer", 1000)
+	testTimer.Enabled = True
+	
+	ButtonHand.Text = "Правая рука"
+	
+	TimerStarted = False
+	testDuration = 30
+	TimeLeft = testDuration
+	hand = "right"
+	ButtonReset.Text = "Начать"
+	TimerLabel.Text = TimeLeft
+	
+	result.Initialize
+	ticks.Initialize
+	If File.Exists(File.DirRootExternal, "result.csv") = False Then
+		ButtonShare.Enabled  = False
+		ButtonDelete.Enabled = False
+	End If
+End Sub
+
+Sub Activity_Resume
+
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+
+End Sub
+
+Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
+	If Action = 0 And ButtonReset.Text = "Готов" Then
+		'remove previous results
+		If TimerStarted = False Then
+			ClearResults
+			ButtonReset.Text = "Готов"
+			TimerStarted = True
+			ButtonHand.Enabled  = False
+			EditTextName.Enabled = False
+			ButtonReset.Enabled  = False
+			ButtonDelete.Enabled = False
+			ButtonShare.Enabled  = False
+			If hand = "right" Then
+				session = DateTime.Now
+			End If
+		End If
+		
+		CanvasRes.DrawCircle(tx, ty, 7dip, Colors.Red, True, 3dip)
+		Activity.Invalidate3(tx - 7dip, ty - 7dip, tx + 7dip, ty + 7dip)
+		now = DateTime.Now
+		coords = EditTextName.Text & ":" & now & ":" & tx & ":" & ty & ":" & hand
+		'Log(coords)
+		Log(session)
+		currentTime = testDuration - TimeLeft
+		result.Add(session & ";"& EditTextName.Text & ";" & now & ";" & currentTime & ";" & tx & ";" & ty & ";" & hand)
+		
+		ticks.Add(now)
+		If ticks.Size > 1 Then
+			tickduration = ticks.Get(ticks.Size-1)-ticks.Get(ticks.Size-2)
+			LabelTicks.Text = tickduration
+		End If
+	Else If Action = 0 And ButtonReset.Text = "Начать" Then
+		Msgbox("", "Нажмите кнопку Начать")
+	Else If Action = 0 And ButtonReset.Text = "Сохранить" Then
+		Msgbox("", "Сохраните результаты перед продолжением!")
+	End If
+End Sub
+
+
+
+Sub ButtonReset_Click
+	If ButtonReset.Text = "Начать" Then
+		ButtonReset.Text = "Готов"
+		Msgbox("", "Коснитесь экрана для начала")
+	Else If ButtonReset.Text = "Готов" Then
+		Msgbox("", "Коснитесь экрана для начала")
+	Else If ButtonReset.Text = "Сохранить" Then
+		Dim Out As OutputStream
+		BitmapRes.Initialize3(CanvasRes.Bitmap)
+		Out = File.OpenOutput(File.DirRootExternal, "Test.png", False)
+		BitmapRes.WriteToStream(Out, 100, "PNG")
+		Out.Close
+				
+		Writer.Initialize(File.OpenOutput(File.DirRootExternal,"result.csv",True))
+		Writer.WriteList(result)
+		Writer.Close
+		result.Clear
+		'Msgbox("result.Size = " & result.Size & CRLF & "The third item is: " & result.Get(result.Size-1), "")
+		ToastMessageShow ("Данные были успешно сохранены в файл " & File.DirRootExternal & "/result.csv", True)
+		If File.Exists(File.DirRootExternal, "result.csv") = False Then
+			ButtonShare.Enabled  = False
+			ButtonDelete.Enabled = False
+		Else
+			ButtonShare.Enabled  = True
+			ButtonDelete.Enabled = True
+		End If
+		ClearResults
+	End If
+End Sub
+
+
+Sub testTimer_Tick
+	If TimeLeft = 0 Then
+		TimeLeft = testDuration
+		TimerLabel.Text = TimeLeft
+		LabelTicks.Text = ""
+		ButtonReset.Text = "Сохранить"
+		TimerStarted = False
+		ToastMessageShow ("Время вышло!", False)
+		ButtonHand.Enabled  = True
+		ButtonReset.Enabled  = True
+		EditTextName.Enabled = True
+		If File.Exists(File.DirRootExternal, "result.csv") = False Then
+			ButtonShare.Enabled  = False
+			ButtonDelete.Enabled = False
+		Else
+			ButtonShare.Enabled  = True
+			ButtonDelete.Enabled = True
+		End If
+		If ButtonHand.Text = "Правая рука" Then
+			hand = "left"
+			ButtonHand.Text = "Левая рука"
+		Else If ButtonHand.Text = "Левая рука" Then
+			hand = "right"
+			ButtonHand.Text = "Правая рука"
+			ButtonHand.Text = "Фамилия, И.О."
+		End If
+	End If
+	If TimerStarted = True Then
+		TimeLeft = TimerLabel.Text - 1
+		TimerLabel.Text = TimeLeft
+	End If
+End Sub
+
+Sub SpinnerHand_ItemClick (Position As Int, Value As Object)
+	If Position = 0 Then
+		hand = "right"
+	Else
+		hand = "left"
+	End If
+End Sub
+
+Sub ClearResults
+	TimerStarted = False
+	TimeLeft = testDuration
+	TimerLabel.Text = TimeLeft
+	LabelTicks.Text = ""
+	If ticks.Size > 0 Then
+		ticks.Clear()
+	End If
+	CanvasRes.DrawColor(Colors.Black)
+	Activity.Invalidate()
+	ButtonReset.Text = "Начать"
+End Sub
+
+Sub ButtonShare_Click
+	Dim share As MESShareLibrary
+	share.sharebinary("file://" & File.DirRootExternal & "/result.csv", "Text/csv", "Send backup file", "")
+End Sub
+
+Sub ButtonDelete_Click
+	Dim msgans As Int
+	msgans = Msgbox2("Вы действительно ходите очистить результаты всех исследований?", "", "Да", "Нет", "", Null)
+	If msgans = -1 Then
+		File.Copy(File.DirRootExternal,"result.csv",File.DirRootExternal,"result.bckp.csv") ' copy file to back up
+		File.Delete(File.DirRootExternal,"result.csv") ' delete results
+		ButtonShare.Enabled  = False
+		ButtonDelete.Enabled = False
+	End If
+End Sub
