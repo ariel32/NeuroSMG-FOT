@@ -122,7 +122,16 @@ res %>% summarise(KFa = (sum(n[hand=="right"])-sum(n[hand=="left"]))/(sum(n[hand
 ggplot(d, aes(x = x.coord, y = y.coord)) +
   geom_point() +
   geom_density_2d() +
-  stat_density_2d(aes(fill = stat(level), color = hand), geom = "polygon")
+  stat_density_2d(aes(fill = stat(level), color = hand), geom = "polygon") +
+  geom_point(aes(x = mean(d$x.coord[d$hand=="right"]), y = mean(d$y.coord[d$hand=="right"])), size = 8, color = "red") +
+  geom_point(aes(x = mean(d$x.coord[d$hand=="left"]), y = mean(d$y.coord[d$hand=="left"])), size = 8, color = "blue") +
+  geom_segment(aes(x = mean(d$x.coord[d$hand=="right"]), xend = mean(d$x.coord[d$hand=="left"]),
+                   y = mean(d$y.coord[d$hand=="right"]), yend = mean(d$y.coord[d$hand=="left"])), 
+               arrow = arrow(angle = 15, ends = "both", type = "closed"), size = 2, color = "green")
+
+result$dist <- sqrt((mean(d$x.coord[d$hand=="right"])-mean(d$x.coord[d$hand=="left"]))^2+(mean(d$y.coord[d$hand=="right"])-mean(d$y.coord[d$hand=="left"]))^2)
+result$dist.sd.right <- sd(sqrt((d$x.coord[d$hand=="right"])^2+(d$y.coord[d$hand=="right"])^2))
+result$dist.sd.left  <- sd(sqrt((d$x.coord[d$hand=="left"])^2+(d$y.coord[d$hand=="left"])^2))
 
 ##########################################################################################
 # Результаты
