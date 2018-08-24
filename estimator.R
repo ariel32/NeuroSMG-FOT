@@ -38,10 +38,10 @@ ggplot(d, aes(x=factor(curr.time), y=tick)) +
 sprintf("%.2f±%.2f", mean(d$tick[d$hand=="right"], na.rm = T), sd(d$tick[d$hand=="right"], na.rm = T))
 sprintf("%.2f±%.2f", mean(d$tick[d$hand=="left"], na.rm = T),  sd(d$tick[d$hand=="right"], na.rm = T))
 
-result$mean.interval.right <- mean(d$tick[d$hand=="right"], na.rm = T)
-result$mean.interval.left  <- mean(d$tick[d$hand=="left"] , na.rm = T)
-result$sd.interval.right   <- sd(d$tick[d$hand=="right"] , na.rm = T)
-result$sd.interval.left    <- sd(d$tick[d$hand=="left"] , na.rm = T)
+result$interval.mean.right <- mean(d$tick[d$hand=="right"], na.rm = T)
+result$interval.mean.left  <- mean(d$tick[d$hand=="left"] , na.rm = T)
+result$interval.sd.right   <- sd(d$tick[d$hand=="right"] , na.rm = T)
+result$interval.sd.left    <- sd(d$tick[d$hand=="left"] , na.rm = T)
 
 ##########################################################################################
 # Количество касаний в секунду
@@ -68,10 +68,10 @@ ggplot(res, aes(x=factor(curr.time), y=n)) +
 sprintf("%.2f±%.2f", mean(res$n[res$hand=="right"], na.rm = T), sd(res$n[res$hand=="right"], na.rm = T))
 sprintf("%.2f±%.2f", mean(res$n[res$hand=="left"], na.rm = T),  sd(res$n[res$hand=="right"], na.rm = T))
 
-result$mean.tap.right <- mean(res$n[res$hand=="right"], na.rm = T)
-result$mean.tap.left  <- mean(res$n[res$hand=="left"] , na.rm = T)
-result$sd.tap.right   <- sd(res$n[res$hand=="right"] , na.rm = T)
-result$sd.tap.left    <- sd(res$n[res$hand=="left"] , na.rm = T)
+result$tap.mean.right <- mean(res$n[res$hand=="right"], na.rm = T)
+result$tap.mean.left  <- mean(res$n[res$hand=="left"] , na.rm = T)
+result$tap.sd.right   <- sd(res$n[res$hand=="right"] , na.rm = T)
+result$tap.sd.left    <- sd(res$n[res$hand=="left"] , na.rm = T)
 
 ##########################################################################################
 # Кумулятивная сумма касаний в секунду
@@ -129,7 +129,8 @@ ggplot(d, aes(x = x.coord, y = y.coord)) +
                    y = mean(d$y.coord[d$hand=="right"]), yend = mean(d$y.coord[d$hand=="left"])), 
                arrow = arrow(angle = 15, ends = "both", type = "closed"), size = 2, color = "green")
 
-result$dist <- sqrt((mean(d$x.coord[d$hand=="right"])-mean(d$x.coord[d$hand=="left"]))^2+(mean(d$y.coord[d$hand=="right"])-mean(d$y.coord[d$hand=="left"]))^2)
+result$dist.mean <- sqrt((mean(d$x.coord[d$hand=="right"])-mean(d$x.coord[d$hand=="left"]))^2 +
+                           (mean(d$y.coord[d$hand=="right"])-mean(d$y.coord[d$hand=="left"]))^2)
 result$dist.sd.right <- sd(sqrt((d$x.coord[d$hand=="right"])^2+(d$y.coord[d$hand=="right"])^2))
 result$dist.sd.left  <- sd(sqrt((d$x.coord[d$hand=="left"])^2+(d$y.coord[d$hand=="left"])^2))
 
