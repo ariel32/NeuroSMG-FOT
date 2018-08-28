@@ -5,10 +5,11 @@ Group=Default Group
 IconFile=
 Library1=core
 Library2=messharelibrary
+Library3=phone
 ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" />~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>~\n~	android:targetSdkVersion="19")~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~
 Module1=Starter
 NumberOfFiles=1
-NumberOfLibraries=2
+NumberOfLibraries=3
 NumberOfModules=1
 Version=7.8
 @EndOfDesignText@
@@ -52,6 +53,10 @@ Sub Globals
 	Dim now As Long
 	Dim result As List
 	Dim ticks As List
+	Dim x As Float
+	Dim y As Float
+	
+	Dim Vibrate As PhoneVibrate
 End Sub
 
 Sub Activity_Create(FirstTime As Boolean)
@@ -107,11 +112,13 @@ Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
 		CanvasRes.DrawCircle(tx, ty, 7dip, Colors.Red, True, 3dip)
 		Activity.Invalidate3(tx - 7dip, ty - 7dip, tx + 7dip, ty + 7dip)
 		now = DateTime.Now
-		coords = EditTextName.Text & ":" & now & ":" & tx & ":" & ty & ":" & hand
-		'Log(coords)
-		Log(session)
-		currentTime = testDuration - TimeLeft
-		result.Add(session & ";"& EditTextName.Text & ";" & now & ";" & currentTime & ";" & tx & ";" & ty & ";" & hand)
+		'Log(session)
+		currentTime = testDuration - TimeLeft + 1
+		x = tx / GetDeviceLayoutValues.Width
+		y = ty / GetDeviceLayoutValues.Height
+		coords = EditTextName.Text & ":" & now & ":" & x & ":" & y & ":" & hand
+		Log(coords)
+		result.Add(session & ";"& EditTextName.Text & ";" & now & ";" & currentTime & ";" & x & ";" & y & ";" & hand)
 		
 		ticks.Add(now)
 		If ticks.Size > 1 Then
@@ -134,11 +141,11 @@ Sub ButtonReset_Click
 	Else If ButtonReset.Text = "Готов" Then
 		Msgbox("", "Коснитесь экрана для начала")
 	Else If ButtonReset.Text = "Сохранить" Then
-		Dim Out As OutputStream
-		BitmapRes.Initialize3(CanvasRes.Bitmap)
-		Out = File.OpenOutput(File.DirRootExternal, "Test.png", False)
-		BitmapRes.WriteToStream(Out, 100, "PNG")
-		Out.Close
+		'Dim Out As OutputStream
+		'BitmapRes.Initialize3(CanvasRes.Bitmap)
+		'Out = File.OpenOutput(File.DirRootExternal, "results.png", False)
+		'BitmapRes.WriteToStream(Out, 100, "PNG")
+		'Out.Close
 				
 		Writer.Initialize(File.OpenOutput(File.DirRootExternal,"result.csv",True))
 		Writer.WriteList(result)
@@ -159,8 +166,9 @@ End Sub
 
 
 Sub testTimer_Tick
-	If TimeLeft = 0 Then
+	If TimeLeft = 1 Then
 		TimeLeft = testDuration
+		Vibrate.Vibrate (100)
 		TimerLabel.Text = TimeLeft
 		LabelTicks.Text = ""
 		ButtonReset.Text = "Сохранить"

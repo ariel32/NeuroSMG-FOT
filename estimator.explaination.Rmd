@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align 
 
 ## Описание исходных данных
 ```{r}
-# А заодно их загрузка и загрузка необходимых пакетов
+# Загрузка данных и загрузка необходимых пакетов
 library(tidyverse)
 d = read.csv("result.csv", sep = ";", encoding = "UTF-8", header = F)
 names(d) <- c("session","name", "time","curr.time","x.coord","y.coord", "hand")
@@ -34,11 +34,11 @@ kableExtra::kable_styling(tbl, "striped", full_width = T, position = "left")
 * ***name*** - идетификатор испытуемого,
 * ***time*** - текущее время, в которое произошло прикосновение к экрану,
 * ***curr.time*** - количество секунд, прошедших с начала теста,
-* ***x.coord*** и ***y.coord*** - координаты прикосновения на экране мобильного устройства,
+* ***x.coord*** и ***y.coord*** - координаты прикосновения на экране мобильного устройства, нормированные относительно размеров экрана,
 * ***hand*** - идентификатор руки.
 
 ```{r}
-# Доводим данные до ума, инициализируем объект для хранения результатов
+# Приводим данные в опрятный вид, инициализируем объект для хранения результатов
 d$tick <- c(NA, diff(d$time))
 d$tick[c(0, diff(d$curr.time)) < 0] <- NA # через дифф ищем смену в текущем времени с 0 на 5, там же сглаживаем провалы в тиках при помощи NA
 
@@ -50,7 +50,7 @@ result <- data.frame(name = d$name[1])
 
 # Интервал между касаниями
 
-```{r}
+```{r, fig.height=8}
 ggplot(d, aes(x=factor(curr.time), y=tick)) +
   geom_violin(scale="width") +
   geom_smooth(method = "loess", se=TRUE, aes(group=1)) +
@@ -88,17 +88,15 @@ result$interval.sd.left    <- sd(d$tick[d$hand=="left"] , na.rm = T)
 d %>% group_by(curr.time, hand, name) %>% summarise(n = n()) -> res
 
 ggplot(res, aes(x=factor(curr.time), y=n)) +
-  geom_violin(scale="width") +
   geom_smooth(method = "loess", se=TRUE, aes(group=1)) +
-  geom_boxplot(width=.12, fill=I("black"), notch=T, outlier.size=NA, col="grey40") +
-  stat_summary(fun.y="median", geom="point", shape=20, col="white") +
+  stat_summary(fun.y="median", geom="point", shape=20, col="black") +
   ggtitle("Результаты теппинг-теста") +
   labs(x="Время", y="Количество касаний в секунду") +
   facet_grid(hand~.) +
   theme(legend.position="none",
         axis.text=element_text(size=12),
         axis.title=element_text(size=16,face="bold")) +
-  scale_fill_brewer() + geom_jitter(alpha = 0.5) +
+  scale_fill_brewer() +
   theme(plot.title = element_text(size=16, face='bold', hjust=0.5),
         axis.text.x=element_text(angle=90, vjust=0, size=16),
         axis.ticks.x=element_blank(),
@@ -157,7 +155,7 @@ result$cum.R2.left     <- smry.l$r.squared
 
 ```{r}
 d %>% group_by(hand, curr.time) %>% summarise(n = n(), time = mean(time)) -> res
-res %>% summarise(KSNS=(sum(n-n[curr.time==0]))/sum(n[curr.time==0]*100)) -> res
+res %>% summarise(KSNS=(sum(n-n[curr.time==1]))/sum(n[curr.time==1]*100)) -> res
 
 result$KSNS.right <- res$KSNS[res$hand=="right"]
 result$KSNS.left  <- res$KSNS[res$hand=="left"]
