@@ -18,8 +18,8 @@ Version=7.8
 	#IncludeTitle: False
 	#ApplicationLabel: FOT
 	#VersionCode: 1
-	#VersionName: 
-	#SupportedOrientations: unspecified
+	#VersionName: SweetRain
+	#SupportedOrientations: portrait
 	#CanInstallToExternalStorage: True
 #End Region
 
@@ -61,6 +61,8 @@ Sub Globals
 End Sub
 
 Sub Activity_Create(FirstTime As Boolean)
+	Dim p As Phone
+	p.SetScreenOrientation(1)
 	Activity.LoadLayout("main")
     CanvasRes.Initialize(Activity)
 	BitmapRes.Initialize3(CanvasRes.Bitmap)
