@@ -57,11 +57,12 @@ Sub Globals
 	Dim y As Float
 	Dim t1, t2, duration As Long
 	Dim Vibrate As PhoneVibrate
+	Dim sharefname As String
 End Sub
 
 Sub Activity_Create(FirstTime As Boolean)
 	Activity.LoadLayout("main")
-    CanvasRes.Initialize(Activity) 'Initialize the canvas (drawer) and makes it draw on the activity (form).
+    CanvasRes.Initialize(Activity)
 	BitmapRes.Initialize3(CanvasRes.Bitmap)
 	
 	testTimer.Initialize("testTimer", 1000)
@@ -78,7 +79,10 @@ Sub Activity_Create(FirstTime As Boolean)
 	
 	result.Initialize
 	ticks.Initialize
-	If File.Exists(File.DirRootExternal, "result.csv") = False Then
+	If File.Exists(File.DirRootExternal & "/FOT", "") = False Then
+		File.MakeDir(File.DirRootExternal, "/FOT")
+	End If
+	If File.Exists(File.DirRootExternal, "FOT/result.csv") = False Then
 		ButtonShare.Enabled  = False
 		ButtonDelete.Enabled = False
 	End If
@@ -100,7 +104,7 @@ Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
 			t2 = DateTime.Now
 			duration = t2-t1
 	End Select
-	If Action = 0 And ButtonReset.Text = "Готов" Then
+	If Action = Activity.ACTION_UP And ButtonReset.Text = "Готов" Then
 		'remove previous results
 		If TimerStarted = False Then
 			ClearResults
@@ -123,9 +127,9 @@ Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
 		currentTime = testDuration - TimeLeft + 1
 		x = tx / GetDeviceLayoutValues.Width
 		y = ty / GetDeviceLayoutValues.Height
-		coords = EditTextName.Text & ":" & now & ":" & duration & ":" & x & ":" & y & ":" & hand
+		coords = session & ";" & EditTextName.Text & ";" & now & ";" & currentTime & ";" & duration & ";" & x & ";" & y & ";" & hand
 		Log(coords)
-		result.Add(session & ";" & EditTextName.Text & ";" & now & ";" & currentTime & ";" & duration & ";" & x & ";" & y & ";" & hand)
+		result.Add(coords)
 		
 		ticks.Add(now)
 		If ticks.Size > 1 Then
@@ -139,8 +143,6 @@ Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
 	End If
 End Sub
 
-
-
 Sub ButtonReset_Click
 	If ButtonReset.Text = "Начать" Then
 		ButtonReset.Text = "Готов"
@@ -148,19 +150,13 @@ Sub ButtonReset_Click
 	Else If ButtonReset.Text = "Готов" Then
 		Msgbox("", "Коснитесь экрана для начала")
 	Else If ButtonReset.Text = "Сохранить" Then
-		'Dim Out As OutputStream
-		'BitmapRes.Initialize3(CanvasRes.Bitmap)
-		'Out = File.OpenOutput(File.DirRootExternal, "results.png", False)
-		'BitmapRes.WriteToStream(Out, 100, "PNG")
-		'Out.Close
-				
-		Writer.Initialize(File.OpenOutput(File.DirRootExternal,"result.csv",True))
+		Writer.Initialize(File.OpenOutput(File.DirRootExternal,"FOT/result.csv",True))
 		Writer.WriteList(result)
 		Writer.Close
 		result.Clear
-		'Msgbox("result.Size = " & result.Size & CRLF & "The third item is: " & result.Get(result.Size-1), "")
-		ToastMessageShow ("Данные были успешно сохранены в файл " & File.DirRootExternal & "/result.csv", True)
-		If File.Exists(File.DirRootExternal, "result.csv") = False Then
+		
+		ToastMessageShow ("Данные были успешно сохранены в файл " & File.DirRootExternal & "/FOT/result.csv", True)
+		If File.Exists(File.DirRootExternal, "FOT/result.csv") = False Then
 			ButtonShare.Enabled  = False
 			ButtonDelete.Enabled = False
 		Else
@@ -184,7 +180,7 @@ Sub testTimer_Tick
 		ButtonHand.Enabled  = True
 		ButtonReset.Enabled  = True
 		EditTextName.Enabled = True
-		If File.Exists(File.DirRootExternal, "result.csv") = False Then
+		If File.Exists(File.DirRootExternal, "FOT/result.csv") = False Then
 			ButtonShare.Enabled  = False
 			ButtonDelete.Enabled = False
 		Else
@@ -206,14 +202,6 @@ Sub testTimer_Tick
 	End If
 End Sub
 
-Sub SpinnerHand_ItemClick (Position As Int, Value As Object)
-	If Position = 0 Then
-		hand = "right"
-	Else
-		hand = "left"
-	End If
-End Sub
-
 Sub ClearResults
 	TimerStarted = False
 	TimeLeft = testDuration
@@ -229,15 +217,28 @@ End Sub
 
 Sub ButtonShare_Click
 	Dim share As MESShareLibrary
-	share.sharebinary("file://" & File.DirRootExternal & "/result.csv", "Text/csv", "Send backup file", "")
+	sharefname = "FOT/result."& DateTime.Now & ".csv"
+	File.Copy(File.DirRootExternal, "FOT/result.csv", File.DirRootExternal, sharefname)
+	share.sharebinary("file://" & File.DirRootExternal & "/" & sharefname, "Text/csv", "Send backup file", "")
 End Sub
 
 Sub ButtonDelete_Click
 	Dim msgans As Int
 	msgans = Msgbox2("Вы действительно ходите очистить результаты всех исследований?", "", "Да", "Нет", "", Null)
 	If msgans = -1 Then
-		File.Copy(File.DirRootExternal,"result.csv",File.DirRootExternal,"result.bckp.csv") ' copy file to back up
-		File.Delete(File.DirRootExternal,"result.csv") ' delete results
+		File.Copy(File.DirRootExternal, "FOT/result.csv", File.DirRootExternal, "FOT/backup.results.csv")
+		
+		Dim reslist As List
+		reslist.initialize
+		Dim resfile As String
+		reslist=File.ListFiles(File.DirRootExternal & "/FOT")
+		For i = reslist.Size-1 To 0 Step -1
+			resfile=reslist.Get(i)
+			If resfile <> "backup.results.csv" Then
+				File.Delete(File.DirRootExternal & "/FOT",resfile)
+			End If
+		Next
+		
 		ButtonShare.Enabled  = False
 		ButtonDelete.Enabled = False
 	End If

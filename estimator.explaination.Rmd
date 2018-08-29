@@ -239,7 +239,8 @@ ggplot(d, aes(x = x.coord, y = y.coord)) +
   geom_point(aes(x = mean(d$x.coord[d$hand=="left"]), y = mean(d$y.coord[d$hand=="left"])), size = 8, color = "blue") +
   geom_segment(aes(x = mean(d$x.coord[d$hand=="right"]), xend = mean(d$x.coord[d$hand=="left"]),
                    y = mean(d$y.coord[d$hand=="right"]), yend = mean(d$y.coord[d$hand=="left"])), 
-               arrow = arrow(angle = 15, ends = "both", type = "closed"), size = 2, color = "green")
+               arrow = arrow(angle = 15, ends = "both", type = "closed"), size = 2, color = "green") +
+  theme(legend.position = "none")
 
 result$dist.mean <- sqrt((mean(d$x.coord[d$hand=="right"])-mean(d$x.coord[d$hand=="left"]))^2 +
                            (mean(d$y.coord[d$hand=="right"])-mean(d$y.coord[d$hand=="left"]))^2)
@@ -261,7 +262,7 @@ kableExtra::kable_styling(tbl, "striped", full_width = T, position = "left")
 ```
 
 
-Также результаты могут быть для наглядности представлены в виде радиальных диаграмм:
+Также результаты могут быть для наглядности представлены в виде радиальных диаграмм (данные предварительно логарифмированы):
 
 ```{r, fig.height=10, fig.width=10}
 res = gather(result[,-c(1)])
