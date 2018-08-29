@@ -55,7 +55,7 @@ Sub Globals
 	Dim ticks As List
 	Dim x As Float
 	Dim y As Float
-	
+	Dim t1, t2, duration As Long
 	Dim Vibrate As PhoneVibrate
 End Sub
 
@@ -91,8 +91,15 @@ End Sub
 Sub Activity_Pause (UserClosed As Boolean)
 
 End Sub
-
+		
 Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
+	Select Action
+		Case Activity.ACTION_DOWN
+			t1 = DateTime.Now
+		Case Activity.ACTION_UP
+			t2 = DateTime.Now
+			duration = t2-t1
+	End Select
 	If Action = 0 And ButtonReset.Text = "Готов" Then
 		'remove previous results
 		If TimerStarted = False Then
@@ -116,9 +123,9 @@ Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
 		currentTime = testDuration - TimeLeft + 1
 		x = tx / GetDeviceLayoutValues.Width
 		y = ty / GetDeviceLayoutValues.Height
-		coords = EditTextName.Text & ":" & now & ":" & x & ":" & y & ":" & hand
+		coords = EditTextName.Text & ":" & now & ":" & duration & ":" & x & ":" & y & ":" & hand
 		Log(coords)
-		result.Add(session & ";"& EditTextName.Text & ";" & now & ";" & currentTime & ";" & x & ";" & y & ";" & hand)
+		result.Add(session & ";" & EditTextName.Text & ";" & now & ";" & currentTime & ";" & duration & ";" & x & ";" & y & ";" & hand)
 		
 		ticks.Add(now)
 		If ticks.Size > 1 Then
