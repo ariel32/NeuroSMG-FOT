@@ -27,6 +27,7 @@ d$session <- as.character(d$session)
 d$x.coord <- as.numeric(d$x.coord)
 d$y.coord <- as.numeric(d$y.coord)
 d$hand <- factor(d$hand, levels = c("right","left"))
+hand.names <- c(right = "Правая рука", left = "Левая рука")
 ```
 
 Исходные данные имеют следующий вид:
@@ -67,7 +68,7 @@ ggplot(d, aes(x=factor(curr.time), y=remove_outliers(tick))) +
   stat_summary(fun.y="median", geom="point", shape=20, col="white") +
   ggtitle("Результаты теппинг-теста") +
   labs(x="Время", y="Интервал между касаниями, мс") +
-  facet_grid(hand~name) +
+  facet_grid(hand~name, labeller = labeller(hand = hand.names)) +
   theme(legend.position="none",
         axis.text=element_text(size=12),
         axis.title=element_text(size=16,face="bold")) +
@@ -101,7 +102,7 @@ ggplot(d, aes(x=factor(curr.time), y=remove_outliers(duration))) +
   stat_summary(fun.y="median", geom="point", shape=20, col="white") +
   ggtitle("Результаты теппинг-теста") +
   labs(x="Время", y="Продолжительность касания, мс") +
-  facet_grid(hand~name) +
+  facet_grid(hand~name, labeller = labeller(hand = hand.names)) +
   theme(legend.position="none",
         axis.text=element_text(size=12),
         axis.title=element_text(size=16,face="bold")) +
@@ -135,7 +136,7 @@ ggplot(d, aes(x=factor(curr.time), y=remove_outliers(tick/duration))) +
   stat_summary(fun.y="median", geom="point", shape=20, col="white") +
   ggtitle("Результаты теппинг-теста") +
   labs(x="Время", y="Скорость касания") +
-  facet_grid(hand~name) +
+  facet_grid(hand~name, labeller = labeller(hand = hand.names)) +
   theme(legend.position="none",
         axis.text=element_text(size=12),
         axis.title=element_text(size=16,face="bold")) +
@@ -179,7 +180,7 @@ ggplot(res, aes(x=factor(curr.time), y=n)) +
   stat_summary(fun.y="median", geom="point", shape=20, col="black") +
   ggtitle("Результаты теппинг-теста") +
   labs(x="Время", y="Количество касаний в секунду") +
-  facet_grid(hand~.) +
+  facet_grid(hand~., labeller = labeller(hand = hand.names)) +
   theme(legend.position="none",
         axis.text=element_text(size=12),
         axis.title=element_text(size=16,face="bold")) +
@@ -216,7 +217,7 @@ ggplot(res, aes(x=factor(curr.time), y=cum.n)) +
   stat_summary(fun.y="median", geom="point", shape=20, col="white") +
   ggtitle("Результаты теппинг-теста") +
   labs(x="Время", y="Кумулятивная сумма касаний в секунду") +
-  facet_grid(hand~.) +
+  facet_grid(hand~., labeller = labeller(hand = hand.names)) +
   theme(legend.position="none",
         axis.text=element_text(size=12),
         axis.title=element_text(size=16,face="bold")) +
