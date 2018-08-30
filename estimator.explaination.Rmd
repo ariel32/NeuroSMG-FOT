@@ -125,6 +125,50 @@ result$duration.sd.right   <- sd(d$duration[d$hand=="right"] , na.rm = T)
 result$duration.sd.left    <- sd(d$duration[d$hand=="left"] , na.rm = T)
 ```
 
+# Скорость касания (отношение интервала между касаниями к их продолжительности)
+
+```{r, fig.height=8}
+ggplot(d, aes(x=factor(curr.time), y=remove_outliers(tick/duration))) +
+  geom_violin(scale="width") +
+  geom_smooth(method = "loess", se=TRUE, aes(group=1)) +
+  geom_boxplot(width=.12, fill=I("black"), notch=T, outlier.size=NA, col="grey40") +
+  stat_summary(fun.y="median", geom="point", shape=20, col="white") +
+  ggtitle("Результаты теппинг-теста") +
+  labs(x="Время", y="Скорость касания") +
+  facet_grid(hand~name) +
+  theme(legend.position="none",
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=16,face="bold")) +
+  scale_fill_brewer() + geom_jitter(alpha = 0.8) +
+  theme(plot.title = element_text(size=16, face='bold', hjust=0.5),
+        axis.text.x=element_text(angle=90, vjust=0, size=16),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(face="bold", size=20),
+        axis.text.y  = element_text(angle=90, vjust=0, size=16))
+```
+
+Скорость касания:
+
+```{r}
+result$speed.mean.right <- mean(d$tick[d$hand=="right"]/d$duration[d$hand=="right"], na.rm = T)
+result$speed.mean.left  <- mean(d$tick[d$hand=="left"]/d$duration[d$hand=="left"] , na.rm = T)
+result$speed.sd.right   <- sd(d$tick[d$hand=="right"]/d$duration[d$hand=="right"] , na.rm = T)
+result$speed.sd.left    <- sd(d$tick[d$hand=="left"]/d$duration[d$hand=="left"] , na.rm = T)
+```
+
+* ***Правая рука*** - `r sprintf("%.2f±%.2f", result$speed.mean.right, result$speed.sd.right)`.
+* ***Левая рука*** - `r sprintf("%.2f±%.2f", result$speed.mean.left,  result$speed.sd.left)`.
+
+Кроме того, определенным интересом обладает корреляция между интервалом между касаниями и продолжительностью касания:
+
+```{r}
+result$speed.cor.right <- cor.test(d$tick[d$hand=="right"], d$duration[d$hand=="right"], method = "sp")$estimate
+result$speed.cor.left  <- cor.test(d$tick[d$hand=="left"],  d$duration[d$hand=="left"], method = "sp")$estimate
+```
+
+* ***Правая рука*** - `r sprintf("%.4f", result$speed.cor.right)`.
+* ***Левая рука*** - `r sprintf("%.4f", result$speed.cor.left)`.
+
 # Количество касаний в секунду
 
 ```{r}
@@ -264,7 +308,7 @@ kableExtra::kable_styling(tbl, "striped", full_width = T, position = "left")
 
 Также результаты могут быть для наглядности представлены в виде радиальных диаграмм (данные предварительно логарифмированы):
 
-```{r, fig.height=10, fig.width=10}
+```{r, fig.height=15, fig.width=15}
 res = gather(result[,-c(1)])
 res$value.log <- log(res$value)
 ggplot(data=res,  aes(x=key, y=value.log, group = 1)) + 
@@ -274,6 +318,6 @@ ggplot(data=res,  aes(x=key, y=value.log, group = 1)) +
   ylab("") + 
   coord_polar() +
   theme(panel.grid = element_line(colour = "gray80"),
-        axis.text = element_text(size = 14, angle = 25))
+        axis.text = element_text(size = 14, angle = 0))
 ```
 
