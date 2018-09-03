@@ -195,7 +195,6 @@ Sub testTimer_Tick
 		Else If ButtonHand.Text = "Левая рука" Then
 			hand = "right"
 			ButtonHand.Text = "Правая рука"
-			ButtonHand.Text = "Фамилия, И.О."
 		End If
 	End If
 	If TimerStarted = True Then
