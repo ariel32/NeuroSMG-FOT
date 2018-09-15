@@ -6,10 +6,11 @@ IconFile=
 Library1=core
 Library2=messharelibrary
 Library3=phone
+Library4=gesturedetector
 ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" />~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>~\n~	android:targetSdkVersion="19")~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~
 Module1=Starter
 NumberOfFiles=1
-NumberOfLibraries=3
+NumberOfLibraries=4
 NumberOfModules=1
 Version=7.8
 @EndOfDesignText@
@@ -56,11 +57,19 @@ Sub Globals
 	Dim x As Float
 	Dim y As Float
 	Dim t1, t2, duration As Long
+	
+	Dim tSize, tPressure As Float 'test
+	Dim GD As GestureDetector 'test
+	
+	Dim Phone As Phone
+	Dim phoneID As String
 	Dim Vibrate As PhoneVibrate
 	Dim sharefname As String
 End Sub
 
 Sub Activity_Create(FirstTime As Boolean)
+	GD.SetOnGestureListener(Activity, "Gesture") 'test
+	
 	Dim p As Phone
 	p.SetScreenOrientation(1)
 	Activity.LoadLayout("main")
@@ -88,7 +97,7 @@ Sub Activity_Create(FirstTime As Boolean)
 		ButtonShare.Enabled  = False
 		ButtonDelete.Enabled = False
 	End If
-End Sub
+End Sub	
 
 Sub Activity_Resume
 
@@ -97,7 +106,17 @@ End Sub
 Sub Activity_Pause (UserClosed As Boolean)
 
 End Sub
-		
+
+Sub Gesture_onTouch(Action As Int, tx As Float, ty As Float, MotionEvent As Object)
+	Log("phoneID = " & phoneID)
+	Log("pressure = " & GD.getPressure(MotionEvent, 0))
+	Log("size = " & GD.getSize(MotionEvent, 0))
+	
+	tPressure = GD.getPressure(MotionEvent, 0)
+	tSize = GD.getSize(MotionEvent, 0)
+	phoneID = Phone.getSettings("android_id")
+End Sub
+
 Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
 	Select Action
 		Case Activity.ACTION_DOWN
@@ -129,7 +148,9 @@ Sub Activity_Touch(Action As Int, tx As Float, ty As Float)
 		currentTime = testDuration - TimeLeft + 1
 		x = tx / GetDeviceLayoutValues.Width
 		y = ty / GetDeviceLayoutValues.Height
-		coords = session & ";" & EditTextName.Text & ";" & now & ";" & currentTime & ";" & duration & ";" & x & ";" & y & ";" & hand
+		
+		'coords = session & ";" & EditTextName.Text & ";" & now & ";" & currentTime & ";" & duration & ";" & x & ";" & y & ";" & hand & ";" & tPressure & ";" & tSize
+		coords = session & ";" & EditTextName.Text & ";" & now & ";" & currentTime & ";" & duration & ";" & x & ";" & y & ";" & hand &  ";" & tPressure & ";" & tSize & ";" & phoneID
 		Log(coords)
 		result.Add(coords)
 		
