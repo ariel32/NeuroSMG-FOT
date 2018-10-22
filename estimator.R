@@ -196,6 +196,8 @@ do.estimation <- function(filename, autofix = TRUE) {
       # Коэффициент силы нервной системы (КСНС)
       
       d %>% group_by(hand, curr.time) %>% summarise(n = n(), time = mean(time)) -> res
+      if(!all(1:30 %in% res$curr.time[res$hand=="right"])) { res <- bind_rows(res, tibble(hand = "right", curr.time = 1, n = 0.0001, time = 0)) }
+      if(!all(1:30 %in% res$curr.time[res$hand=="left"]))  { res <- bind_rows(res, tibble(hand = "left", curr.time = 1, n = 0.0001, time = 0)) }
       res %>% summarise(KSNS=(sum(n-n[curr.time==1]))/sum(n[curr.time==1]*100)) -> res
       
       result$KSNS.right <- as.numeric(res$KSNS[res$hand=="right"])

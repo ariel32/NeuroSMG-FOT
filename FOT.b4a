@@ -85,7 +85,7 @@ Sub Activity_Create(FirstTime As Boolean)
 	If File.Exists(File.DirRootExternal & "/FOT", "") = False Then
 		File.MakeDir(File.DirRootExternal, "/FOT")
 	End If
-	If File.Exists(File.DirRootExternal, "FOT/result.csv") = False Then
+	If File.Exists(File.DirRootExternal, "FOT/FOT.csv") = False Then
 		ButtonShare.Enabled  = False
 		ButtonDelete.Enabled = False
 	End If
@@ -154,13 +154,13 @@ Sub ButtonReset_Click
 	Else If ButtonReset.Text = "Готов" Then
 		Msgbox("", "Коснитесь экрана для начала")
 	Else If ButtonReset.Text = "Сохранить" Then
-		Writer.Initialize(File.OpenOutput(File.DirRootExternal,"FOT/result.csv",True))
+		Writer.Initialize(File.OpenOutput(File.DirRootExternal,"FOT/FOT.csv",True))
 		Writer.WriteList(result)
 		Writer.Close
 		result.Clear
 		
-		ToastMessageShow ("Данные были успешно сохранены в файл " & File.DirRootExternal & "/FOT/result.csv", True)
-		If File.Exists(File.DirRootExternal, "FOT/result.csv") = False Then
+		ToastMessageShow ("Данные были успешно сохранены в файл " & File.DirRootExternal & "/FOT/FOT.csv", True)
+		If File.Exists(File.DirRootExternal, "FOT/FOT.csv") = False Then
 			ButtonShare.Enabled  = False
 			ButtonDelete.Enabled = False
 		Else
@@ -184,7 +184,7 @@ Sub testTimer_Tick
 		ButtonHand.Enabled  = True
 		ButtonReset.Enabled  = True
 		EditTextName.Enabled = True
-		If File.Exists(File.DirRootExternal, "FOT/result.csv") = False Then
+		If File.Exists(File.DirRootExternal, "FOT/FOT.csv") = False Then
 			ButtonShare.Enabled  = False
 			ButtonDelete.Enabled = False
 		Else
@@ -220,8 +220,8 @@ End Sub
 
 Sub ButtonShare_Click
 	Dim share As MESShareLibrary
-	sharefname = "FOT/result."& DateTime.Now & ".csv"
-	File.Copy(File.DirRootExternal, "FOT/result.csv", File.DirRootExternal, sharefname)
+	sharefname = "FOT/FOT."& DateTime.Now & ".csv"
+	File.Copy(File.DirRootExternal, "FOT/FOT.csv", File.DirRootExternal, sharefname)
 	share.sharebinary("file://" & File.DirRootExternal & "/" & sharefname, "Text/csv", "Send backup file", "")
 End Sub
 
@@ -229,7 +229,7 @@ Sub ButtonDelete_Click
 	Dim msgans As Int
 	msgans = Msgbox2("Вы действительно ходите очистить результаты всех исследований?", "", "Да", "Нет", "", Null)
 	If msgans = -1 Then
-		File.Copy(File.DirRootExternal, "FOT/result.csv", File.DirRootExternal, "FOT/backup.results.csv")
+		File.Copy(File.DirRootExternal, "FOT/FOT.csv", File.DirRootExternal, "FOT/backup.FOT.csv")
 		
 		Dim reslist As List
 		reslist.initialize
@@ -237,7 +237,7 @@ Sub ButtonDelete_Click
 		reslist=File.ListFiles(File.DirRootExternal & "/FOT")
 		For i = reslist.Size-1 To 0 Step -1
 			resfile=reslist.Get(i)
-			If resfile <> "backup.results.csv" Then
+			If resfile <> "backup.FOT.csv" Then
 				File.Delete(File.DirRootExternal & "/FOT",resfile)
 			End If
 		Next
