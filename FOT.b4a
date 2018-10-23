@@ -262,6 +262,8 @@ Sub deletedata
 		
 		ButtonShare.Enabled  = False
 		ButtonDelete.Enabled = False
+		ButtonLShare.Enabled  = False
+		ButtonLDelete.Enabled = False
 	End If
 End Sub
 
@@ -285,6 +287,10 @@ Sub login
 	If logged = False Then
 		Activity.RemoveAllViews
 		Activity.LoadLayout("login")
+	End If
+	If File.Exists(File.DirRootExternal, "FOT/FOT.csv") = False Then
+		ButtonLShare.Enabled  = False
+		ButtonLDelete.Enabled = False
 	End If
 End Sub
 
