@@ -311,6 +311,10 @@ Sub ButtonLStart_Click
 		End If
 		Activity.RemoveAllViews
 		Activity.LoadLayout("main")
+		If File.Exists(File.DirRootExternal, "FOT/FOT.csv") = False Then
+			ButtonShare.Enabled  = False
+			ButtonDelete.Enabled = False
+		End If
 		EditTextName.Text = name
 		ButtonHand.Text = "Правая рука"
 		ButtonReset.Text = "Начать"
